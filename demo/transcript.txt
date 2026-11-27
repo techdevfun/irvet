@@ -1,0 +1,66 @@
+# irvet demo - real CLI output
+# (ransomwarehelp-reconstructed is a RECONSTRUCTED fixture from
+#  public indictment reporting - Krebs 20/11/2026, TechCrunch 25/11/2026;
+#  the CTO was INDICTED, which means accused, not convicted)
+
+$ irvet init demo-vendor
+created demo-vendor/vendor.json
+created demo-vendor/irvet.config.json
+Next: fill in the vendor's real claims, then run 'irvet vet vendor.json'.
+
+$ irvet vet examples/ransomwarehelp-reconstructed/vendor.json
+irvet 0.1.0 - vendor vetting (dossier: examples/ransomwarehelp-reconstructed/vendor.json)
+vendor: RansomwareHelp (RECONSTRUCTED)
+
+rule  severity  status    detail
+V1    HIGH      FAIL      claims a proprietary decryptor for a strain with a public decryptor and does not name the public one
+V2    HIGH      FAIL      claims 'never pay' in marketing but the contract has no payment clause
+V3    HIGH      FAIL      no audit right; no itemised invoice
+V4    HIGH      FAIL      vendor asks for the ransom note to be deleted
+V5    MEDIUM    FAIL      vendor requires unsupervised remote access
+V6    MEDIUM    PASS      -
+V7    MEDIUM    FAIL      absolute claim in marketing material: "100% recovery"
+V8    MEDIUM    MISSING   no OFAC screening statement in the dossier
+
+VERDICT: DO-NOT-HIRE
+evidence needed:
+  - V1: name the public decryptor, or explain in writing why it is not used
+  - V2: a written payment clause: pay only with written victim approval, or never pay
+  - V3: audit right plus an itemised invoice (pass-through costs separate from service fees)
+  - V4: ransom note and attacker contact channel stay with the victim
+  - V5: supervised, scoped, time-limited remote access with a kill switch
+  - V7: remove the absolute guarantee; replace it with a written method and failure plan
+  - V8: a written sanctions-screening statement and a process for a sanctioned counterparty
+Verdict is about the dossier provided, not about the vendor.
+exit: 1
+
+$ irvet vet examples/clean-vendor/vendor.json
+irvet 0.1.0 - vendor vetting (dossier: examples/clean-vendor/vendor.json)
+vendor: Example Recovery Co
+
+rule  severity  status    detail
+V1    HIGH      PASS      -
+V2    HIGH      PASS      -
+V3    HIGH      PASS      -
+V4    HIGH      PASS      -
+V5    MEDIUM    PASS      -
+V6    MEDIUM    PASS      -
+V7    MEDIUM    PASS      -
+V8    MEDIUM    PASS      -
+
+VERDICT: HIRE
+No red flags in the dossier provided - this does not prove the vendor is honest.
+Verdict is about the dossier provided, not about the vendor.
+
+$ irvet invoice examples/invoice-markup/invoice.json --contract examples/invoice-markup/contract.json
+irvet invoice check (invoice: examples/invoice-markup/invoice.json)
+line total: $16,010 | stated total: $16,010 (matches)
+
+findings: 2
+  [MARKUP] Decryption fee
+    pass-through cost $6,000 billed as a $13,260 service fee (markup $7,260, +121%). Pass-through costs must be billed at cost when the contract says so.
+  [NO-PAYMENT-CLAUSE] Decryption fee
+    a "Decryption fee" line of $13,260 while the contract states no ransom payment. Ask what this fee pays for, in writing.
+
+FLAGGED: review before paying.
+exit: 1
